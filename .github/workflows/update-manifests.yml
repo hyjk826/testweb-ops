@@ -1,0 +1,79 @@
+name: Update Kubernetes Manifests
+
+on:
+  repository_dispatch:
+    types: [image-updated]
+  workflow_dispatch:
+    inputs:
+      image:
+        description: 'Docker image name'
+        required: true
+        default: 'ghcr.io/hyjk826/testweb-dev'
+      tag:
+        description: 'Image tag'
+        required: true
+        default: 'latest'
+
+jobs:
+  update-manifests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set image variables
+      id: vars
+      run: |
+        if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+          echo "image=${{ github.event.client_payload.image }}" >> $GITHUB_OUTPUT
+          echo "tag=${{ github.event.client_payload.tag }}" >> $GITHUB_OUTPUT
+          echo "commit_sha=${{ github.event.client_payload.commit_sha }}" >> $GITHUB_OUTPUT
+        else
+          echo "image=${{ github.event.inputs.image }}" >> $GITHUB_OUTPUT
+          echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          echo "commit_sha=manual" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Update deployment image
+      run: |
+        sed -i "s|image: ghcr.io/hyjk826/testweb-dev:.*|image: ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}|g" k8s/deployment.yaml
+
+    - name: Check for changes
+      id: changes
+      run: |
+        if git diff --quiet; then
+          echo "changed=false" >> $GITHUB_OUTPUT
+        else
+          echo "changed=true" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Create Pull Request
+      if: steps.changes.outputs.changed == 'true'
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "Update image to ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}"
+        title: "Update testweb image to ${{ steps.vars.outputs.tag }}"
+        body: |
+          This PR updates the testweb image to `${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}`
+          
+          **Changes:**
+          - Updated deployment.yaml with new image tag
+          
+          **Triggered by:** ${{ github.event_name }}
+          **Commit SHA:** ${{ steps.vars.outputs.commit_sha }}
+        branch: update-image-${{ steps.vars.outputs.tag }}
+        delete-branch: true
+
+    - name: Auto-merge PR
+      if: steps.changes.outputs.changed == 'true' && github.event_name == 'repository_dispatch'
+      run: |
+        # PR이 생성된 후 자동으로 머지하는 로직
+        # 실제 환경에서는 수동 검토 후 머지하는 것을 권장
+        echo "PR created for image update"
