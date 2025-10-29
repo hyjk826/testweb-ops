@@ -11,6 +11,8 @@ spec:
     targetRevision: 15.x.x
     helm:
       parameters:
+        - name: global.imageRegistry
+          value: ghcr.io
         - name: auth.postgresPassword
           value: tetris_password
         - name: auth.username
