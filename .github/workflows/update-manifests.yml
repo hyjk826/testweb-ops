@@ -54,12 +54,14 @@ jobs:
 
     - name: Update deployment image
       run: |
+        IMAGE="${{ steps.vars.outputs.image }}"
+        TAG="${{ steps.vars.outputs.tag }}"
         if [ "${{ steps.vars.outputs.image_type }}" = "backend" ]; then
           echo "Updating backend API image..."
-ㅊㅇ           sed -i "s|image: ghcr.io/hyjk826/testweb-dev-backend:.*|image: ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}|g" k8s/backend/backend-api.yaml
+          sed -i "s|image: ghcr.io/hyjk826/testweb-dev-backend:.*|image: ${IMAGE}:${TAG}|g" k8s/backend/backend-api.yaml
         else
           echo "Updating web server image..."
-          sed -i "s|image: ghcr.io/hyjk826/testweb-dev:.*|image: ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}|g" k8s/frontend/deployment.yaml
+          sed -i "s|image: ghcr.io/hyjk826/testweb-dev:.*|image: ${IMAGE}:${TAG}|g" k8s/frontend/deployment.yaml
         fi
 
     - name: Check for changes
