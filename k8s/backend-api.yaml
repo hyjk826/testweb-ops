@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: ghcr.io/hyjk826/testweb-dev-backend:latest  # 실제 이미지 주소로 변경 필요
+        image: ghcr.io/hyjk826/testweb-dev-backend:v1.1
         ports:
         - containerPort: 8000
         env:
