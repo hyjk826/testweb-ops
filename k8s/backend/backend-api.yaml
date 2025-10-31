@@ -81,13 +81,14 @@ metadata:
   name: backend-api-service
   namespace: image-upload
 spec:
+  type: NodePort
   selector:
     app: backend-api
   ports:
   - protocol: TCP
     port: 8000
     targetPort: 8000
-  type: ClusterIP
+    nodePort: 30080
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
