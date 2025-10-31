@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: backend-api
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/hyjk826/testweb-ops.git
+    targetRevision: HEAD
+    path: k8s
+    directory:
+      include: backend-api.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: image-upload
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true

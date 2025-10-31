@@ -2,7 +2,7 @@ name: Update Kubernetes Manifests
 
 on:
   repository_dispatch:
-    types: [image-updated]
+    types: [image-updated-backend, image-updated-web]
   workflow_dispatch:
     inputs:
       image:
@@ -34,15 +34,33 @@ jobs:
           echo "image=${{ github.event.client_payload.image }}" >> $GITHUB_OUTPUT
           echo "tag=${{ github.event.client_payload.tag }}" >> $GITHUB_OUTPUT
           echo "commit_sha=${{ github.event.client_payload.commit_sha }}" >> $GITHUB_OUTPUT
+          # 이벤트 타입에서 image_type 자동 추출
+          # client_payload에 image_type이 있으면 우선 사용, 없으면 이벤트 타입에서 추출
+          if [ -n "${{ github.event.client_payload.image_type }}" ]; then
+            echo "image_type=${{ github.event.client_payload.image_type }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event.action }}" == *"backend"* ]]; then
+            echo "image_type=backend" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event.action }}" == *"web"* ]]; then
+            echo "image_type=web" >> $GITHUB_OUTPUT
+          else
+            echo "image_type=web" >> $GITHUB_OUTPUT
+          fi
         else
           echo "image=${{ github.event.inputs.image }}" >> $GITHUB_OUTPUT
           echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
           echo "commit_sha=manual" >> $GITHUB_OUTPUT
+          echo "image_type=web" >> $GITHUB_OUTPUT
         fi
 
     - name: Update deployment image
       run: |
-        sed -i "s|image: ghcr.io/hyjk826/testweb-dev:.*|image: ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}|g" k8s/deployment.yaml
+        if [ "${{ steps.vars.outputs.image_type }}" = "backend" ]; then
+          echo "Updating backend API image..."
+          sed -i "s|image: ghcr.io/hyjk826/testweb-dev-backend:.*|image: ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}|g" k8s/backend-api.yaml
+        else
+          echo "Updating web server image..."
+          sed -i "s|image: ghcr.io/hyjk826/testweb-dev:.*|image: ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}|g" k8s/deployment.yaml
+        fi
 
     - name: Check for changes
       id: changes
@@ -58,17 +76,18 @@ jobs:
       uses: peter-evans/create-pull-request@v5
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        commit-message: "Update image to ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}"
-        title: "Update testweb image to ${{ steps.vars.outputs.tag }}"
+        commit-message: "Update ${{ steps.vars.outputs.image_type }} image to ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}"
+        title: "Update ${{ steps.vars.outputs.image_type }} image to ${{ steps.vars.outputs.tag }}"
         body: |
-          This PR updates the testweb image to `${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}`
+          This PR updates the ${{ steps.vars.outputs.image_type }} image to `${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}`
           
           **Changes:**
-          - Updated deployment.yaml with new image tag
+          - Updated ${{ steps.vars.outputs.image_type }} deployment with new image tag
+          - Image type: ${{ steps.vars.outputs.image_type }}
           
           **Triggered by:** ${{ github.event_name }}
           **Commit SHA:** ${{ steps.vars.outputs.commit_sha }}
-        branch: update-image-${{ steps.vars.outputs.tag }}
+        branch: update-${{ steps.vars.outputs.image_type }}-image-${{ steps.vars.outputs.tag }}
         delete-branch: true
 
     - name: Auto-merge PR

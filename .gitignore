@@ -1,0 +1,20 @@
+# Kubernetes Secrets with sensitive data
+k8s/secrets.yaml
+k8s/*-secret.yaml
+k8s/*-secrets.yaml
+k8s/SECRET_SETUP.md 
+k8s/secrets.yaml.example
+
+
+# Environment files
+.env
+*.env
+!*.env.example
+
+# AWS credentials
+*.pem
+*.key
+credentials
+
+
+
