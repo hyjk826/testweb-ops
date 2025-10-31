@@ -2,9 +2,18 @@
 
 ## 파일 구조
 
-- `backend-api.yaml`: 백엔드 API 서버 배포 설정 (Namespace, Deployment, Service, Ingress)
-- `secrets.yaml`: 민감한 정보 (AWS 자격 증명 등) - **Git에 올리지 않음**
-- `secrets.yaml.example`: Secret 파일 예시 템플릿
+```
+k8s/
+├── backend/
+│   └── backend-api.yaml    # 백엔드 API 서버 배포 설정
+├── frontend/
+│   ├── namespace.yaml      # 프론트엔드 네임스페이스
+│   ├── deployment.yaml      # 프론트엔드 Deployment
+│   ├── service.yaml        # 프론트엔드 Service
+│   └── ingress.yaml        # 프론트엔드 Ingress
+├── secrets.yaml            # 민감한 정보 (Git에 올리지 않음)
+└── secrets.yaml.example    # Secret 파일 예시 템플릿
+```
 
 ## Secret 설정 방법
 
@@ -55,7 +64,13 @@ kubectl apply -f k8s/secrets.yaml
 ### 2. 백엔드 API 배포
 
 ```bash
-kubectl apply -f k8s/backend-api.yaml
+kubectl apply -f k8s/backend/backend-api.yaml
+```
+
+### 3. 프론트엔드 배포
+
+```bash
+kubectl apply -f k8s/frontend/
 ```
 
 ## 주의사항
