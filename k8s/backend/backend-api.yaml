@@ -23,7 +23,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: ghcr.io/hyjk826/testweb-dev-backend:v1.0
+        image: ghcr.io/hyjk826/testweb-dev-backend:v1.3
         ports:
         - containerPort: 8000
         env:
