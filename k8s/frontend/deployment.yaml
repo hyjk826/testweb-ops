@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: web
-        image: ghcr.io/hyjk826/testweb-dev:main-0289b59b106e250faae94a02971a754f496a16a7
+        image: ghcr.io/hyjk826/testweb-dev:v1.4
         ports:
         - containerPort: 80
         resources:
