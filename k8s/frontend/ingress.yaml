@@ -1,19 +1,19 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: testweb-ingress
-  namespace: testweb
+  name: web-ingress
+  namespace: web
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-  - host: testweb.example.com
+  - host: web.example.com
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: testweb-service
+            name: web-service
             port:
               number: 80
