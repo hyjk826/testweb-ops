@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: testweb-service
-  namespace: testweb
+  name: web-service
+  namespace: web
   labels:
-    app: testweb
+    app: web
 spec:
   selector:
-    app: testweb
+    app: web
   ports:
   - protocol: TCP
     port: 80

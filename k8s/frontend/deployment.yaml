@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: testweb
-  namespace: testweb
+  name: web
+  namespace: web
   labels:
-    app: testweb
+    app: web
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: testweb
+      app: web
   template:
     metadata:
       labels:
-        app: testweb
+        app: web
     spec:
       containers:
-      - name: testweb
+      - name: web
         image: ghcr.io/hyjk826/testweb-dev:v1.0
         ports:
         - containerPort: 80
